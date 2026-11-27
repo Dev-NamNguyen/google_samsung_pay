@@ -63,19 +63,28 @@ class _OtpScreenState extends State<OtpScreen> {
                 vm.controllers.indexWhere((c) => c.text.isEmpty).clamp(0, 5),
           ),
           const SizedBox(height: AppSpacing.section),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          // Hàng đếm ngược + gửi lại: dùng Wrap để màn hẹp thì link
+          // 'Gửi lại mã' rớt xuống dòng dưới thay vì tràn Row.
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
             children: [
-              const Icon(Icons.timer_outlined,
-                  size: 16, color: AppColors.greyText),
-              const SizedBox(width: 6),
+              const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.timer_outlined,
+                      size: 16, color: AppColors.greyText),
+                  SizedBox(width: 6),
+                ],
+              ),
               Text(
                 vm.secondsLeft > 0
                     ? 'Gửi lại sau ${vm.countdown}'
                     : 'Bạn chưa nhận được mã?',
                 style: const TextStyle(color: AppColors.greyText),
               ),
-              const SizedBox(width: 8),
               GestureDetector(
                 onTap: vm.canResend ? () => vm.resend() : null,
                 child: Text(

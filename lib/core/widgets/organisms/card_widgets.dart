@@ -384,65 +384,75 @@ class OtpBoxes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(6, (i) {
-        final isActive = !error && i == activeIndex;
-        final border = error
-            ? Border.all(color: AppColors.errorRed, width: 2)
-            : isActive
-                ? Border.all(color: AppColors.blueNeon, width: 2)
-                : Border.all(color: AppColors.greyBorder, width: 1.5);
-        Widget box;
-        if (fixedDigits != null) {
-          box = Center(
-            child: Text(
-              fixedDigits![i],
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: AppColors.errorRed,
-              ),
-            ),
-          );
-        } else {
-          box = TextField(
-            controller: controllers?[i],
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            maxLength: 1,
+    // 6 ô cố định 48px + 5 khoảng 12px = 348px, rộng hơn 342px nội dung
+    // của màn 390 (padding 2 bên 24) nên Row bị overflow 6px — và càng
+    // hẹp càng tràn (màn 360 tràn 36px). Cho mỗi ô co giãn bằng Expanded
+    // theo chiều rộng thật: ở 390 ô rộng 47px, vẫn đúng tỉ lệ Figma.
+    final boxes = List<Widget>.generate(6, (i) {
+      final isActive = !error && i == activeIndex;
+      final border = error
+          ? Border.all(color: AppColors.errorRed, width: 2)
+          : isActive
+              ? Border.all(color: AppColors.blueNeon, width: 2)
+              : Border.all(color: AppColors.greyBorder, width: 1.5);
+      Widget box;
+      if (fixedDigits != null) {
+        box = Center(
+          child: Text(
+            fixedDigits![i],
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
+              color: AppColors.errorRed,
             ),
-            decoration: const InputDecoration(
-              counterText: '',
-              border: InputBorder.none,
-              filled: false,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onChanged: (v) {
-              if (v.isNotEmpty && i < 5) {
-                FocusScope.of(context).nextFocus();
-              } else if (v.isEmpty && i > 0) {
-                FocusScope.of(context).previousFocus();
-              }
-              onChanged?.call(v);
-            },
-          );
-        }
-        return Container(
-          width: 48,
+          ),
+        );
+      } else {
+        box = TextField(
+          controller: controllers?[i],
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.center,
+          maxLength: 1,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+          ),
+          decoration: const InputDecoration(
+            counterText: '',
+            border: InputBorder.none,
+            filled: false,
+            contentPadding: EdgeInsets.zero,
+          ),
+          onChanged: (v) {
+            if (v.isNotEmpty && i < 5) {
+              FocusScope.of(context).nextFocus();
+            } else if (v.isEmpty && i > 0) {
+              FocusScope.of(context).previousFocus();
+            }
+            onChanged?.call(v);
+          },
+        );
+      }
+      return Expanded(
+        child: Container(
           height: 56,
-          margin: EdgeInsets.only(right: i == 5 ? 0 : 12),
           decoration: BoxDecoration(
             color: error ? AppColors.errorRedPale : AppColors.backgroundAlt,
             borderRadius: BorderRadius.circular(14),
             border: border,
           ),
           child: box,
-        );
-      }),
+        ),
+      );
+    });
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (var i = 0; i < boxes.length; i++) ...[
+          if (i > 0) const SizedBox(width: 12),
+          boxes[i],
+        ],
+      ],
     );
   }
 }
